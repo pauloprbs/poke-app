@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./*"]
+      "*": ["node_modules/*", "src/types/*"]
     },
     "target": "es5",
     "lib": [
@@ -25,6 +25,6 @@
     "jsx": "react-jsx"
   },
   "include": [
-    "src"
-  ]
+    "src/**/*"
+, "reactQueryConfig.ts"  ]
 }

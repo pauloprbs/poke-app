@@ -1,8 +1,12 @@
 import React from 'react';
-import { useFetchData } from './hooks/useFetchData'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useFetchData } from './hooks/useFetchData';
 
-//header do app
 import WelcomePolidex from './components/WelcomePolidex';
+import PokemonSearch from './components/PokemonSearch';
+
+// Renomeando a variável local para evitar conflito
+const myQueryClient = new QueryClient();
 
 function App() {
   const { data, isLoading, error } = useFetchData();
@@ -11,15 +15,12 @@ function App() {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <div>
-      <WelcomePolidex />
-
-      {/*
-      <h1>Data:</h1>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-      */}
-      
-    </div>
+    <QueryClientProvider client={myQueryClient}>
+      <div>
+        <WelcomePolidex />
+        <PokemonSearch />
+      </div>
+    </QueryClientProvider>
   );
 }
 
