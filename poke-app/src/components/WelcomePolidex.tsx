@@ -7,7 +7,7 @@ const WelcomePolidex = () => {
 
         <header className='w-full'>
 
-            {/* Imagem de boas vindas */}
+            {/* Imagem Polidex */}
             <img 
             src={Polidex} 
             alt="Polidex"

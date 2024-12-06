@@ -2,10 +2,11 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFetchData } from './hooks/useFetchData';
 
+// Import dos componentes
 import WelcomePolidex from './components/WelcomePolidex';
 import PokemonSearch from './components/PokemonSearch';
+import Footer from './components/Footer';
 
-// Renomeando a variável local para evitar conflito
 const myQueryClient = new QueryClient();
 
 function App() {
@@ -16,9 +17,12 @@ function App() {
 
   return (
     <QueryClientProvider client={myQueryClient}>
-      <div>
-        <WelcomePolidex />
-        <PokemonSearch />
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-1">
+          <WelcomePolidex />
+          <PokemonSearch />
+        </div>
+        <Footer />
       </div>
     </QueryClientProvider>
   );

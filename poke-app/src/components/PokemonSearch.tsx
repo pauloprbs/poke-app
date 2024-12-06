@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 
+// Definição do tipo Pokemon
 type Pokemon = {
   name: string;
   sprite: string;
@@ -8,6 +9,7 @@ type Pokemon = {
   types: string[];
 };
 
+// Defição das cores de fundo para cada tipo de pokemon
 const typeColors: { [key: string]: string } = {
   fire: '#F7A399',
   water: '#99C2F7',
@@ -29,13 +31,14 @@ const typeColors: { [key: string]: string } = {
   fighting: '#D68A59',
 };
 
+// Definição dos estados
 const PokemonSearch = () => {
-  const [search, setSearch] = useState('');
-  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [search, setSearch] = useState(''); // Armazena o valor digitado no campo de busca
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]); // Lista de pokemons a ser exibida na interface
+  const [isLoading, setIsLoading] = useState(false); // Lista sendo carregada
+  const [error, setError] = useState<string | null>(null); // Armazena mensagem de erro
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null); // Índice do pokemon selecionado (navegação com o teclado)
+  const searchInputRef = useRef<HTMLInputElement>(null); // Foco programático para o campo de entrada de texto
 
   // Atalho para foco no input
   useEffect(() => {
@@ -49,6 +52,7 @@ const PokemonSearch = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Requisição à api para obter detalhes do pokemon
   const fetchPokemonDetails = async (url: string): Promise<Pokemon> => {
     try {
       const response = await api.get(url);
@@ -64,6 +68,7 @@ const PokemonSearch = () => {
     }
   };
 
+  // Filtragem e carregamento dos pokemons
   useEffect(() => {
     const fetchFilteredPokemon = async () => {
       if (!search.trim()) {
@@ -98,6 +103,7 @@ const PokemonSearch = () => {
   }, [search]);
 
   // Navegação com o teclado
+
   useEffect(() => {
     const handleNavigation = (e: KeyboardEvent) => {
       if (pokemonList.length === 0 || selectedIndex === null) return;
@@ -119,10 +125,13 @@ const PokemonSearch = () => {
     return () => window.removeEventListener('keydown', handleNavigation);
   }, [pokemonList, selectedIndex]);
 
+  // Define a cor de fundo
+  //Usa apenas o primeiro tipo do pokemon
   const getBackgroundColor = (types: string[]): string => {
     return typeColors[types[0]] || '#FFFFFF';
   };
 
+  // Interface
   return (
     <div className="w-full max-w-2xl mx-auto text-center text-black py-8">
       <input

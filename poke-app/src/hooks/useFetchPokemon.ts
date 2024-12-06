@@ -34,7 +34,7 @@ const fetchPokemon = async (page: number, limit: number): Promise<Pokemon[]> => 
   
   const pokemonUrls = response.data.results.map((pokemon) => pokemon.url);
   
-  // Faz a requisição dos detalhes dos Pokémon de uma vez
+  // Faz a requisição dos detalhes dos Pokémon
   const pokemonDetails = await Promise.all(pokemonUrls.map(fetchPokemonDetails));
   
   return pokemonDetails; // Retorna os detalhes dos Pokémon
