@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 
 type Pokemon = {
   name: string;
-  sprite: string; // Caminho para a imagem
-  abilities: string[]; // Lista de habilidades
-  types: string[]; // Lista de tipos
+  sprite: string;
+  abilities: string[];
+  types: string[];
 };
 
 const typeColors: { [key: string]: string } = {
@@ -30,16 +30,29 @@ const typeColors: { [key: string]: string } = {
 };
 
 const PokemonSearch = () => {
-  const [search, setSearch] = useState(''); // Estado para o termo de busca
-  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]); // Resultados filtrados
-  const [isLoading, setIsLoading] = useState(false); // Estado de carregamento
-  const [error, setError] = useState<string | null>(null); // Estado de erro
+  const [search, setSearch] = useState('');
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Atalho para foco no input
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === '/') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const fetchPokemonDetails = async (url: string): Promise<Pokemon> => {
     try {
       const response = await api.get(url);
       const data = response.data;
-
       return {
         name: data.name,
         sprite: data.sprites.front_default,
@@ -47,12 +60,7 @@ const PokemonSearch = () => {
         types: data.types.map((type: any) => type.type.name),
       };
     } catch {
-      return {
-        name: 'Desconhecido',
-        sprite: '',
-        abilities: [],
-        types: [],
-      };
+      return { name: 'Desconhecido', sprite: '', abilities: [], types: [] };
     }
   };
 
@@ -60,6 +68,7 @@ const PokemonSearch = () => {
     const fetchFilteredPokemon = async () => {
       if (!search.trim()) {
         setPokemonList([]);
+        setSelectedIndex(null);
         return;
       }
 
@@ -77,7 +86,8 @@ const PokemonSearch = () => {
         );
 
         setPokemonList(detailedPokemon);
-      } catch (err) {
+        setSelectedIndex(0); // Seleciona o primeiro Pokémon da lista ao carregar
+      } catch {
         setError('Erro ao carregar a lista de Pokémon.');
       } finally {
         setIsLoading(false);
@@ -87,22 +97,43 @@ const PokemonSearch = () => {
     fetchFilteredPokemon();
   }, [search]);
 
+  // Navegação com o teclado
+  useEffect(() => {
+    const handleNavigation = (e: KeyboardEvent) => {
+      if (pokemonList.length === 0 || selectedIndex === null) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex((prevIndex) =>
+          prevIndex === pokemonList.length - 1 ? 0 : (prevIndex as number) + 1
+        );
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex((prevIndex) =>
+          prevIndex === 0 ? pokemonList.length - 1 : (prevIndex as number) - 1
+        );
+      }
+    };
+
+    window.addEventListener('keydown', handleNavigation);
+    return () => window.removeEventListener('keydown', handleNavigation);
+  }, [pokemonList, selectedIndex]);
+
   const getBackgroundColor = (types: string[]): string => {
-    return typeColors[types[0]] || '#FFFFFF'; // Pega a cor do primeiro tipo ou um padrão branco
+    return typeColors[types[0]] || '#FFFFFF';
   };
 
   return (
     <div className="w-full max-w-2xl mx-auto text-center text-black py-8">
-      {/* Campo de busca */}
       <input
         type="text"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        ref={searchInputRef}
         placeholder="Digite o nome do Pokémon..."
         className="w-full p-3 border rounded-md mb-4 shadow-sm focus:outline-none focus:ring focus:ring-indigo-300"
       />
 
-      {/* Exibe os resultados da busca somente quando houver texto na busca */}
       {search.trim() && (
         <>
           {isLoading && <p>Carregando Pokémon...</p>}
@@ -110,17 +141,16 @@ const PokemonSearch = () => {
           {pokemonList.length === 0 && !isLoading && <p>Nenhum Pokémon encontrado.</p>}
 
           <ul className="rounded-md shadow-md p-4 max-h-96 overflow-y-auto space-y-4">
-            {pokemonList.map((pokemon) => (
+            {pokemonList.map((pokemon, index) => (
               <li
                 key={pokemon.name}
-                className="flex items-center p-4 text-lg rounded-md shadow-sm"
+                onMouseEnter={() => setSelectedIndex(index)} // Seleciona o Pokémon ao passar o mouse
+                className={`flex items-center p-4 text-lg rounded-md shadow-sm cursor-pointer ${
+                  selectedIndex === index ? 'ring-2 ring-indigo-500' : ''
+                }`}
                 style={{ backgroundColor: getBackgroundColor(pokemon.types) }}
               >
-                <img
-                  src={pokemon.sprite}
-                  alt={pokemon.name}
-                  className="w-12 h-12 mr-4"
-                />
+                <img src={pokemon.sprite} alt={pokemon.name} className="w-12 h-12 mr-4" />
                 <div className="flex-1">
                   <p className="font-bold capitalize">{pokemon.name}</p>
                   <div className="flex flex-wrap gap-2 mt-1">
